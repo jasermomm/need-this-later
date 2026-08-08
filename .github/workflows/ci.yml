@@ -25,7 +25,7 @@ jobs:
       - run: npm run build:pages
       - run: npm run build:extension
       - run: npm audit --omit=dev --audit-level=high
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web-and-extension
           path: |
@@ -72,7 +72,7 @@ jobs:
         working-directory: apps/mobile
       - run: ./gradlew assembleDebug
         working-directory: apps/mobile/android
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-debug-unsigned
           path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
