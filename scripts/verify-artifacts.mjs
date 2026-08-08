@@ -64,6 +64,9 @@ for (const reference of new Set(extensionReferences)) {
 }
 
 const serviceWorker = await readFile(resolve(root, "dist-pages/sw.js"), "utf8");
+const globalStyles = await readFile(resolve(root, "app/globals.css"), "utf8");
+assert(globalStyles.includes('@import "tailwindcss" source(none);'), "Tailwind automatic source discovery must stay disabled for reproducible builds");
+assert(globalStyles.includes('@source "./";'), "Tailwind must scan the application source explicitly");
 const shellMatch = serviceWorker.match(/const APP_SHELL = (\[[^;]+\]);/);
 assert(shellMatch, "Generated service-worker precache list is missing");
 const applicationShell = new Set(JSON.parse(shellMatch[1]));
