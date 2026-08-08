@@ -1,4 +1,4 @@
-const CACHE = "need-this-later-v1";
+const CACHE = "need-this-later-v5";
 const APP_SHELL = ["./", "./manifest.webmanifest", "./favicon.svg"];
 const DB_NAME = "need-this-later";
 const DB_VERSION = 3;
@@ -102,8 +102,24 @@ async function handleShareTarget(request) {
   return Response.redirect(new URL("./", self.registration.scope), 303);
 }
 
+async function cacheApplicationShell() {
+  const cache = await caches.open(CACHE);
+  await cache.addAll(APP_SHELL);
+
+  const shellResponse = await cache.match("./");
+  if (shellResponse) {
+    const html = await shellResponse.text();
+    const scopePath = new URL(self.registration.scope).pathname;
+    const assetUrls = Array.from(html.matchAll(/(?:src|href)=["']([^"']+)["']/g), (match) => match[1])
+      .map((value) => new URL(value, self.registration.scope))
+      .filter((url) => url.origin === self.location.origin && url.pathname.startsWith(scopePath))
+      .map((url) => url.toString());
+    await cache.addAll([...new Set(assetUrls)]);
+  }
+}
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(cacheApplicationShell().then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
@@ -117,10 +133,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(fetch(event.request).then((response) => {
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
+      return response;
+    }).catch(async () => {
+      const cache = await caches.open(CACHE);
+      return (await cache.match(event.request, { ignoreSearch: true, ignoreVary: true }))
+        || (await cache.match("./", { ignoreSearch: true, ignoreVary: true }))
+        || Response.error();
+    }));
+    return;
+  }
+  event.respondWith(caches.match(event.request, { ignoreVary: true }).then((cached) => cached || fetch(event.request).then((response) => {
     if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
     return response;
-  }).catch(() => event.request.mode === "navigate" ? caches.match("./") : undefined)));
+  }).catch(() => Response.error())));
 });
 
 self.addEventListener("notificationclick", (event) => {

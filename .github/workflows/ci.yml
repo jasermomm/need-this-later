@@ -42,7 +42,10 @@ jobs:
           workspaces: apps/desktop/src-tauri
       - name: Install Tauri system libraries
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
+      - run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo clippy --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- -D warnings
 
   database-security:
     runs-on: ubuntu-latest
@@ -70,11 +73,11 @@ jobs:
       - run: npm run build:native
       - run: npx cap sync android
         working-directory: apps/mobile
-      - run: ./gradlew assembleDebug
+      - run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease
         working-directory: apps/mobile/android
       - uses: actions/upload-artifact@v7
         with:
-          name: android-debug-unsigned
+          name: android-debug
           path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 
   dependency-review:

@@ -6,6 +6,22 @@ I Need This Later is a private, local-first inbox for links, notes, images, file
 
 ![Capture screen](docs/screenshots/capture.png)
 
+## Use or download
+
+- **Web and iPhone/iPad:** open the [live PWA](https://jasermomm.github.io/need-this-later/). It can be installed from a supported browser and works offline after its application shell is cached.
+- **Windows, macOS, Linux, and Android:** download the appropriate package from the [v1.0.0 release](https://github.com/jasermomm/need-this-later/releases/tag/v1.0.0). Windows and macOS desktop packages are unsigned; Android uses the project release key.
+- **Browser extension:** download `need-this-later-extension.zip`, extract it, enable developer mode in a Chromium browser, and load the extracted directory as an unpacked extension.
+
+The native desktop packages currently target Windows x64, macOS Apple silicon, and Linux x86-64. iPhone and iPad users should use the PWA; no iOS binary is distributed.
+
+| Platform | Release download |
+| --- | --- |
+| Windows x64 | `.exe` setup or `.msi` installer |
+| macOS Apple silicon | `.dmg` installer or `.app.tar.gz` archive |
+| Linux x86-64 | `.AppImage`, `.deb`, or `.rpm` package |
+| Android 6.0+ | `need-this-later-android.apk` |
+| Chromium extension | `need-this-later-extension.zip` |
+
 ## What works
 
 - Instant keyboard-first capture: `Enter` saves, `Shift + Enter` adds a line.
@@ -17,7 +33,7 @@ I Need This Later is a private, local-first inbox for links, notes, images, file
 - Portable plaintext export and versioned password-encrypted backup/restore.
 - Installable offline PWA and POST-based Web Share Target that does not put captured content in a URL.
 - Optional end-to-end encrypted Supabase sync with recovery keys, conflict copies, tombstones, retries, and encrypted attachments.
-- Chromium/Firefox WebExtension with popup capture, selection capture, context menus, keyboard shortcut, extension-local encrypted storage, and optional encrypted vault upload.
+- Chromium WebExtension with popup capture, selection capture, context menus, keyboard shortcut, extension-local encrypted storage, and optional encrypted vault upload.
 - Tauri 2 desktop shell with tray behavior and a global quick-capture shortcut.
 - Capacitor mobile shell plus Android and iOS native-share reference implementations.
 
@@ -51,6 +67,7 @@ npm test
 npm run build
 npm run build:pages
 npm run build:extension
+npm run verify:artifacts
 ```
 
 ## Platforms
@@ -94,6 +111,26 @@ See [docs/SELF_HOSTING.md](docs/SELF_HOSTING.md). In short: create or run Supaba
 - [Privacy policy](PRIVACY.md)
 - [Security and disclosure](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
+
+## Windows code signing policy
+
+Windows `v1.0.0` artifacts are currently unsigned. The project intends to use SignPath.io for future Windows code signing after approval.
+
+When enabled, free code signing will be provided by SignPath.io, with a certificate from the SignPath Foundation.
+
+### Roles
+
+Committer, reviewer, and release approver:
+
+- Jaser Mohamed (@jasermomm)
+
+### Privacy
+
+Need This Later is local-first. The application does not transfer
+information to networked systems unless explicitly requested or enabled
+by the user.
+
+See the project's privacy and security documentation for additional details.
 
 ## License
 

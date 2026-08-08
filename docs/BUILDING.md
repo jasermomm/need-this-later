@@ -24,30 +24,33 @@ The Vinext build outputs the Sites/Cloudflare-compatible worker under `dist`. Th
 npm run build:extension
 ```
 
-Load `dist-extension` as an unpacked Chromium extension or as a temporary Firefox add-on. Store submissions require developer accounts and store-specific packaging/signing. The manifest requests no host permissions.
+Load `dist-extension` as an unpacked Chromium extension. Store submissions require developer accounts and store-specific packaging/signing. The manifest requests no host permissions. Firefox is not a supported target in `v1.0.0`.
 
 ## Desktop
 
 From the repository root:
 
 ```bash
-cargo install tauri-cli --version "^2" --locked
 npm run tauri -- build
 ```
 
-Tauri’s `beforeBuildCommand` creates a relative static build. Windows builds require WebView2; Linux requires the distribution packages documented by Tauri; macOS signing/notarization requires Apple credentials. Unsigned CI artifacts should be labeled as such.
+The npm lockfile supplies the Tauri CLI. Tauri’s `beforeBuildCommand` creates a relative static build. Windows builds require WebView2; Linux requires the distribution packages documented by Tauri; macOS signing/notarization requires Apple credentials. Unsigned CI artifacts should be labeled as such.
 
 ## Mobile
 
 Build the relative PWA, then in `apps/mobile`:
 
 ```bash
-npx cap add android
-npx cap add ios
 npm run sync
 ```
 
-Open the generated native project with the corresponding script. The committed Android project already registers the `ShareIntent` Capacitor plugin and `SEND`/`SEND_MULTIPLE` filters; `android/gradlew assembleDebug` produces an unsigned development APK when an Android SDK is installed. The iOS share extension reference requires an App Group matching `group.app.needthislater.mobile` and must be added as an Xcode extension target. Windows cannot sign or compile iOS binaries.
+The Android and iOS projects are already committed. Use `npx cap add android` or `npx cap add ios` only when regenerating a missing platform project from scratch.
+
+Open the generated native project with the corresponding script. The committed Android project already registers the `ShareIntent` Capacitor plugin and `SEND`/`SEND_MULTIPLE` filters.
+
+The Android debug build is signed with the Android debug key and is only for development. `android/gradlew assembleRelease` produces an unsigned release APK unless `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` are provided. The release workflow supplies those values through GitHub Actions secrets and publishes a release-key-signed APK.
+
+The iOS source remains a reference implementation and is not distributed as a native binary in `v1.0.0`. Apple mobile devices should use the hosted PWA. Windows cannot compile or sign iOS binaries.
 
 ## Verification
 

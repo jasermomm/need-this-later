@@ -18,8 +18,5 @@
       "description": "Open quick capture"
     }
   },
-  "browser_specific_settings": {
-    "gecko": { "id": "need-this-later@example.invalid", "strict_min_version": "121.0" }
-  },
   "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'" }
 }

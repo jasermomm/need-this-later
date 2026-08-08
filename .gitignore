@@ -21,6 +21,10 @@
 # misc
 .DS_Store
 *.pem
+*.jks
+*.keystore
+*.p12
+*.pfx
 
 # debug
 npm-debug.log*
@@ -39,6 +43,7 @@ yarn-error.log*
 /dist-pages/
 /dist-extension/
 **/target/
+apps/desktop/src-tauri/gen/
 apps/mobile/android/.gradle/
 apps/mobile/android/local.properties
 apps/mobile/android/**/build/

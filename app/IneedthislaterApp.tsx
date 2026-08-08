@@ -425,7 +425,11 @@ export default function IneedthislaterApp() {
     const updateOnline = () => setOnline(navigator.onLine);
     window.addEventListener("online", updateOnline);
     window.addEventListener("offline", updateOnline);
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => undefined);
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch((error: unknown) => {
+        console.error("Service worker registration failed", error);
+      });
+    }
     return () => { active = false; window.removeEventListener("online", updateOnline); window.removeEventListener("offline", updateOnline); };
   }, []);
 

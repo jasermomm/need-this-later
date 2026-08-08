@@ -43,6 +43,7 @@ jobs:
       - run: npm test
       - run: npm run build:pages
       - run: npm run build:extension
+      - run: npm run verify:artifacts
       - run: cd dist-pages && zip -r ../need-this-later-pwa.zip .
       - run: cd dist-extension && zip -r ../need-this-later-extension.zip .
       - name: Upload portable artifacts
@@ -100,10 +101,25 @@ jobs:
       - run: npm run build:native
       - run: npx cap sync android
         working-directory: apps/mobile
-      - run: ./gradlew assembleDebug
+      - name: Restore Android release keystore
         working-directory: apps/mobile/android
-      - run: cp apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk need-this-later-android-unsigned.apk
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/need-this-later-release.jks
+      - name: Build signed Android release APK
+        working-directory: apps/mobile/android
+        env:
+          ANDROID_KEYSTORE_PATH: need-this-later-release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew testDebugUnitTest lintRelease assembleRelease
+      - name: Verify and stage signed Android APK
+        run: |
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner" verify --verbose --print-certs "$APK"
+          cp "$APK" need-this-later-android.apk
       - name: Upload Android artifact
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$RELEASE_TAG" need-this-later-android-unsigned.apk --repo "$GITHUB_REPOSITORY" --clobber
+        run: gh release upload "$RELEASE_TAG" need-this-later-android.apk --repo "$GITHUB_REPOSITORY" --clobber

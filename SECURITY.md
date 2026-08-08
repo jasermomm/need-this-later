@@ -46,6 +46,6 @@ RLS restricts rows to `auth.uid()`. Storage policies require the first object-pa
 - Attachments are capped at 25 MiB and are buffered for encryption in this release.
 - Auth access tokens are bearer credentials. The web interface keeps active sync material in memory; the extension uses session storage. Lock or close the application on shared devices.
 - Deleting a remote ciphertext does not prove immediate physical erasure from provider backups.
-- Unsigned development builds do not provide operating-system publisher identity.
+- Unsigned Windows and macOS desktop releases do not provide operating-system publisher identity.
 
 See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) for detailed boundaries and mitigations.

@@ -1,4 +1,7 @@
-use tauri::{tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}, Manager};
+use tauri::{
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager,
+};
 
 fn toggle_capture_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
@@ -14,35 +17,39 @@ fn toggle_capture_window(app: &tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default()
-        .setup(|app| {
-            if let Some(icon) = app.default_window_icon().cloned() {
-                TrayIconBuilder::new()
-                    .tooltip("I Need This Later")
-                    .icon(icon)
-                    .on_tray_icon_event(|tray, event| {
-                        if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
-                            toggle_capture_window(&tray.app_handle());
+    let builder = tauri::Builder::default().setup(|app| {
+        if let Some(icon) = app.default_window_icon().cloned() {
+            TrayIconBuilder::new()
+                .tooltip("I Need This Later")
+                .icon(icon)
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        toggle_capture_window(tray.app_handle());
+                    }
+                })
+                .build(app)?;
+        }
+        #[cfg(desktop)]
+        {
+            use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+            app.handle().plugin(
+                tauri_plugin_global_shortcut::Builder::new()
+                    .with_handler(|app, _shortcut, event| {
+                        if event.state() == ShortcutState::Pressed {
+                            toggle_capture_window(app);
                         }
                     })
-                    .build(app)?;
-            }
-            #[cfg(desktop)]
-            {
-                use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
-                app.handle().plugin(
-                    tauri_plugin_global_shortcut::Builder::new()
-                        .with_handler(|app, _shortcut, event| {
-                            if event.state() == ShortcutState::Pressed {
-                                toggle_capture_window(app);
-                            }
-                        })
-                        .build(),
-                )?;
-                app.global_shortcut().register("CmdOrCtrl+Shift+Space")?;
-            }
-            Ok(())
-        });
+                    .build(),
+            )?;
+            app.global_shortcut().register("CmdOrCtrl+Shift+Space")?;
+        }
+        Ok(())
+    });
 
     builder
         .run(tauri::generate_context!())
