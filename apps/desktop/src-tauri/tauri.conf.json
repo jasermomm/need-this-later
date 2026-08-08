@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "identifier": "app.needthislater.desktop",
   "build": {
-    "beforeDevCommand": "npm --prefix ../../.. run dev",
+    "beforeDevCommand": "npm --prefix ../.. run dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "npm --prefix ../../.. run build:native",
+    "beforeBuildCommand": "npm --prefix ../.. run build:native",
     "frontendDist": "../../../dist-pages"
   },
   "app": {
