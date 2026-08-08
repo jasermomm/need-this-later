@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">I Need This Later</string>
+    <string name="title_activity_main">I Need This Later</string>
+    <string name="package_name">app.needthislater.mobile</string>
+    <string name="custom_url_scheme">app.needthislater.mobile</string>
+</resources>

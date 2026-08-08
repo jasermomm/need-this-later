@@ -1,0 +1,6 @@
+{
+  "name": "@need-this-later/extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module"
+}

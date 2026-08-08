@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "I Need This Later",
+  "version": "1.0.0",
+  "identifier": "app.needthislater.desktop",
+  "build": {
+    "beforeDevCommand": "npm --prefix ../../.. run dev",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "npm --prefix ../../.. run build:native",
+    "frontendDist": "../../../dist-pages"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "I Need This Later",
+        "width": 920,
+        "height": 760,
+        "minWidth": 360,
+        "minHeight": 520,
+        "center": true,
+        "resizable": true,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'self' https:; object-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "A private capture inbox",
+    "longDescription": "Capture links, notes, images, and files immediately. Find them later without organizing first.",
+    "copyright": "Copyright © 2026 I Need This Later contributors",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png"]
+  }
+}

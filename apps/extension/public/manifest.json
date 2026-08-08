@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "I Need This Later",
+  "short_name": "Need This Later",
+  "version": "1.0.0",
+  "description": "Capture the page, selection, link, or image you know you will need later.",
+  "icons": { "16": "icon-16.png", "32": "icon-32.png", "48": "icon-48.png", "128": "icon-128.png" },
+  "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
+  "action": {
+    "default_title": "Save to I Need This Later",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icon-16.png", "32": "icon-32.png", "48": "icon-48.png" }
+  },
+  "background": { "service_worker": "service-worker.js", "type": "module" },
+  "commands": {
+    "quick-capture": {
+      "suggested_key": { "default": "Ctrl+Shift+L", "mac": "Command+Shift+L" },
+      "description": "Open quick capture"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": { "id": "need-this-later@example.invalid", "strict_min_version": "121.0" }
+  },
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'" }
+}
