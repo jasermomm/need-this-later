@@ -37,8 +37,8 @@ select throws_ok(
   '42501', null, 'User A cannot insert User B vault header'
 );
 
-select ok(has_table('public', 'encrypted_items'), 'Encrypted item table exists');
-select ok(has_table('public', 'vault_headers'), 'Vault header table exists');
+select has_table('public', 'encrypted_items', 'Encrypted item table exists');
+select has_table('public', 'vault_headers', 'Vault header table exists');
 select ok((select not public from storage.buckets where id = 'encrypted-attachments'), 'Attachment bucket is private');
 
 select * from finish();

@@ -51,4 +51,5 @@ apps/mobile/ios/App/App/public/
 xcuserdata/
 /.wrangler/
 /outputs/
+/artifacts/
 /work/

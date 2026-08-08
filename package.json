@@ -4,6 +4,7 @@
   "private": true,
   "description": "A private, local-first inbox for everything you will need later.",
   "license": "MIT",
+  "packageManager": "npm@11.6.2",
   "workspaces": [
     "apps/*",
     "packages/*"
