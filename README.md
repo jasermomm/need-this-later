@@ -99,7 +99,7 @@ The web app and native shells share the data model and client-side security code
 
 ## Self-host encrypted sync
 
-See [docs/SELF_HOSTING.md](docs/SELF_HOSTING.md). In short: create or run Supabase, apply the included migration, configure email/password Auth, then provide the project URL and public anonymous key. Never put the service-role key in a client build.
+See the beginner-friendly [Supabase self-hosting guide](docs/SELF_HOSTING.md). It has a no-terminal Dashboard walkthrough, a CLI workflow, local Docker instructions, verification steps, and troubleshooting. The app accepts a current public publishable key or a legacy `anon` key. Never put a secret or `service_role` key in a client build.
 
 ## Project documentation
 

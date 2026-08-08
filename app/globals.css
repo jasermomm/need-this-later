@@ -209,6 +209,7 @@ kbd { background: color-mix(in srgb, #fff 16%, transparent); border: 1px solid c
 .settings-section { border-top: 1px solid var(--line); padding: 19px 0; }
 .settings-section h3 { font-size: 14px; margin: 0 0 7px; }
 .settings-section p { color: var(--muted); font-size: 13px; margin: 0; }
+.settings-section p a { color: var(--accent); font-weight: 650; }
 .privacy-fact { align-items: center; color: var(--muted); display: flex; font-size: 12px; gap: 8px; margin-top: 12px; }
 .segmented { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: inline-flex; gap: 2px; padding: 3px; }
 .segmented button { align-items: center; background: transparent; border: 0; border-radius: 7px; color: var(--muted); display: flex; font-size: 12px; gap: 5px; padding: 7px 9px; }

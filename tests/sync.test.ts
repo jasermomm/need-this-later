@@ -1,12 +1,45 @@
 import "fake-indexeddb/auto";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createItem, updateItem } from "../packages/core/src/model";
 import { createVault, encryptJson } from "../packages/crypto/src/vault";
 import { getDeviceId, getItem, openLocalDatabase, readAttachment, saveAttachment, saveItem } from "../packages/database/src/indexeddb";
-import { MemorySyncTransport, SyncEngine, type RemoteItemRow, type SyncTransport } from "../packages/sync/src/engine";
+import { MemorySyncTransport, SupabaseAuthClient, SyncEngine, type RemoteItemRow, type SyncTransport } from "../packages/sync/src/engine";
 
 const databases: IDBDatabase[] = [];
-afterEach(() => databases.splice(0).forEach((database) => database.close()));
+afterEach(() => {
+  databases.splice(0).forEach((database) => database.close());
+  vi.unstubAllGlobals();
+});
+
+describe("Supabase authentication", () => {
+  it("explains hosted email confirmation instead of reporting an ambiguous failure", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ user: { id: "11111111-1111-4111-8111-111111111111" } }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })));
+
+    await expect(new SupabaseAuthClient("https://example.supabase.co", "sb_publishable_test").signUp("person@example.com", "account password"))
+      .rejects.toThrow("Account created. Check your email, confirm the account, then return here and choose Sign in.");
+  });
+
+  it("refreshes an expiring session with the public client key", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({
+      access_token: "new-access-token",
+      refresh_token: "new-refresh-token",
+      expires_in: 3600,
+      user: { id: "11111111-1111-4111-8111-111111111111" },
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const session = await new SupabaseAuthClient("https://example.supabase.co", "sb_publishable_test").refreshSession("old-refresh-token");
+
+    expect(session.accessToken).toBe("new-access-token");
+    expect(fetchMock).toHaveBeenCalledWith("https://example.supabase.co/auth/v1/token?grant_type=refresh_token", expect.objectContaining({
+      headers: { apikey: "sb_publishable_test", "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: "old-refresh-token" }),
+    }));
+  });
+});
 
 describe("offline-first encrypted sync", () => {
   it("moves creates, edits, and tombstones between two devices idempotently", async () => {

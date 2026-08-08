@@ -216,7 +216,7 @@ function SyncSettings({ database, deviceId, onSynced, notify }: { database: IDBD
     if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") {
       throw new Error("Sync endpoints must use HTTPS except during local development");
     }
-    if (!anonymousKey.trim()) throw new Error("A Supabase anonymous key is required");
+    if (!anonymousKey.trim()) throw new Error("A Supabase publishable or legacy anon key is required");
   };
 
   const uploadHeader = async (activeSession: SupabaseSession, header: VaultHeader) => {
@@ -241,7 +241,11 @@ function SyncSettings({ database, deviceId, onSynced, notify }: { database: IDBD
     setBusy(true);
     setStatus("Synchronizing encrypted changes…");
     try {
-      const engine = new SyncEngine(database, new SupabaseSyncTransport(baseUrl, anonymousKey, activeSession.accessToken), key, activeSession.userId, deviceId);
+      const readySession = activeSession.expiresAt <= Date.now() + 60_000
+        ? await new SupabaseAuthClient(baseUrl, anonymousKey).refreshSession(activeSession.refreshToken)
+        : activeSession;
+      if (readySession !== activeSession) setSession(readySession);
+      const engine = new SyncEngine(database, new SupabaseSyncTransport(baseUrl, anonymousKey, readySession.accessToken), key, readySession.userId, deviceId);
       const result = await engine.synchronize(cursor);
       setCursor(result.cursor);
       await onSynced();
@@ -297,7 +301,7 @@ function SyncSettings({ database, deviceId, onSynced, notify }: { database: IDBD
 
   return <div className="sync-panel">
     <div className="segmented"><button className={accountMode === "signin" ? "active" : ""} onClick={() => setAccountMode("signin")}>Sign in</button><button className={accountMode === "signup" ? "active" : ""} onClick={() => setAccountMode("signup")}>Create account</button></div>
-    <details className="advanced-sync" open={!configuredSupabaseUrl || !configuredSupabaseKey}><summary>Sync server</summary><label>Supabase URL <input value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} placeholder="https://project.supabase.co" /></label><label>Public anonymous key <input value={anonymousKey} onChange={(event) => setAnonymousKey(event.target.value)} type="password" autoComplete="off" /></label></details>
+    <details className="advanced-sync" open={!configuredSupabaseUrl || !configuredSupabaseKey}><summary>Sync server</summary><label>Supabase URL <input value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} placeholder="https://project.supabase.co" /></label><label>Publishable or legacy anon key <input value={anonymousKey} onChange={(event) => setAnonymousKey(event.target.value)} type="password" autoComplete="off" placeholder="sb_publishable_…" /></label></details>
     <div className="sync-fields"><label>Email <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" autoComplete="email" /></label><label>Account password <input value={accountPassword} onChange={(event) => setAccountPassword(event.target.value)} type="password" autoComplete={accountMode === "signup" ? "new-password" : "current-password"} /></label><label>Vault password <input value={vaultPassword} onChange={(event) => setVaultPassword(event.target.value)} type="password" autoComplete="off" /><small>Separate from authentication. It encrypts and unlocks your content on this device.</small></label></div>
     <button className="button primary" onClick={connect} disabled={busy || !email || !accountPassword || !vaultPassword}>{busy ? <LoaderCircle className="spin" size={16} /> : <Upload size={16} />} {accountMode === "signup" ? "Create encrypted vault" : "Unlock encrypted vault"}</button>
     <p className="sync-status" role="status">{status}</p>
@@ -366,7 +370,7 @@ function SettingsDialog({
         </div>
         <div className="settings-section">
           <div className="section-heading"><div><h3>Encrypted sync</h3><span className="coming-label">Optional</span></div></div>
-          <p>Connect your own Supabase deployment using the documented environment settings. Items are encrypted on this device before synchronization; Supabase receives ciphertext and limited routing metadata.</p>
+          <p>Connect your own Supabase deployment using the <a href="https://github.com/jasermomm/need-this-later/blob/main/docs/SELF_HOSTING.md" target="_blank" rel="noreferrer">step-by-step setup guide</a>. Items are encrypted on this device before synchronization; Supabase receives ciphertext and limited routing metadata.</p>
           <SyncSettings database={database} deviceId={deviceId} onSynced={onRestored} notify={notify} />
         </div>
         <div className="settings-section">

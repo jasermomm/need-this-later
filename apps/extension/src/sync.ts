@@ -9,6 +9,8 @@ interface ExtensionSyncSession {
   baseUrl: string;
   anonymousKey: string;
   accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
   userId: string;
   deviceId: string;
   masterKey: string;
@@ -16,7 +18,22 @@ interface ExtensionSyncSession {
 
 async function session(): Promise<ExtensionSyncSession | null> {
   const result = await api.storage.session.get("syncSession");
-  return (result.syncSession as ExtensionSyncSession | undefined) ?? null;
+  const active = (result.syncSession as ExtensionSyncSession | undefined) ?? null;
+  if (!active) return null;
+  if (!active.refreshToken || !Number.isFinite(active.expiresAt)) {
+    await api.storage.session.remove("syncSession");
+    return null;
+  }
+  if (active.expiresAt > Date.now() + 60_000) return active;
+  try {
+    const refreshed = await new SupabaseAuthClient(active.baseUrl, active.anonymousKey).refreshSession(active.refreshToken);
+    const next = { ...active, accessToken: refreshed.accessToken, refreshToken: refreshed.refreshToken, expiresAt: refreshed.expiresAt };
+    await api.storage.session.set({ syncSession: next });
+    return next;
+  } catch {
+    await api.storage.session.remove("syncSession");
+    return null;
+  }
 }
 
 export async function unlockExtensionSync(baseUrl: string, anonymousKey: string, email: string, accountPassword: string, vaultPassword: string): Promise<void> {
@@ -32,7 +49,7 @@ export async function unlockExtensionSync(baseUrl: string, anonymousKey: string,
   const local = await api.storage.local.get("syncDeviceId");
   const deviceId = String(local.syncDeviceId || crypto.randomUUID());
   await api.storage.local.set({ syncDeviceId: deviceId, syncBaseUrl: baseUrl, syncAnonymousKey: anonymousKey });
-  await api.storage.session.set({ syncSession: { baseUrl, anonymousKey, accessToken: authenticated.accessToken, userId: authenticated.userId, deviceId, masterKey: bytesToBase64Url(masterKey) } satisfies ExtensionSyncSession });
+  await api.storage.session.set({ syncSession: { baseUrl, anonymousKey, accessToken: authenticated.accessToken, refreshToken: authenticated.refreshToken, expiresAt: authenticated.expiresAt, userId: authenticated.userId, deviceId, masterKey: bytesToBase64Url(masterKey) } satisfies ExtensionSyncSession });
   masterKey.fill(0);
 }
 

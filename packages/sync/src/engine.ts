@@ -192,6 +192,9 @@ export class SupabaseAuthClient {
       body: JSON.stringify(body),
     });
     const data = await response.json() as SupabaseAuthResponse;
+    if (path === "signup" && response.ok && data.user?.id && !data.access_token) {
+      throw new Error("Account created. Check your email, confirm the account, then return here and choose Sign in.");
+    }
     if (!response.ok || !data.access_token || !data.refresh_token || !data.user?.id) {
       throw new Error(data.error_description || data.msg || "Supabase authentication failed");
     }
@@ -209,6 +212,10 @@ export class SupabaseAuthClient {
 
   signIn(email: string, password: string): Promise<SupabaseSession> {
     return this.request("token?grant_type=password", { email, password });
+  }
+
+  refreshSession(refreshToken: string): Promise<SupabaseSession> {
+    return this.request("token?grant_type=refresh_token", { refresh_token: refreshToken });
   }
 }
 
