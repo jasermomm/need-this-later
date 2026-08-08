@@ -3,15 +3,38 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing version tag to build
+        required: true
+        default: v1.0.0
 
 permissions:
   contents: write
 
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+
 jobs:
+  ensure-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure draft release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft --generate-notes --title "I Need This Later $RELEASE_TAG"
+          fi
+
   portable-artifacts:
+    needs: ensure-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -22,15 +45,13 @@ jobs:
       - run: npm run build:extension
       - run: cd dist-pages && zip -r ../need-this-later-pwa.zip .
       - run: cd dist-extension && zip -r ../need-this-later-extension.zip .
-      - uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          generate_release_notes: true
-          files: |
-            need-this-later-pwa.zip
-            need-this-later-extension.zip
+      - name: Upload portable artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" need-this-later-pwa.zip need-this-later-extension.zip --repo "$GITHUB_REPOSITORY" --clobber
 
   desktop:
+    needs: ensure-release
     strategy:
       fail-fast: false
       matrix:
@@ -38,6 +59,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -52,16 +75,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: apps/desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: I Need This Later ${{ github.ref_name }}
+          tagName: ${{ env.RELEASE_TAG }}
+          releaseName: I Need This Later ${{ env.RELEASE_TAG }}
           releaseDraft: true
           prerelease: false
-          args: --manifest-path src-tauri/Cargo.toml
 
   android:
+    needs: ensure-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -78,7 +103,7 @@ jobs:
       - run: ./gradlew assembleDebug
         working-directory: apps/mobile/android
       - run: cp apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk need-this-later-android-unsigned.apk
-      - uses: softprops/action-gh-release@v2
-        with:
-          draft: true
-          files: need-this-later-android-unsigned.apk
+      - name: Upload Android artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" need-this-later-android-unsigned.apk --repo "$GITHUB_REPOSITORY" --clobber
