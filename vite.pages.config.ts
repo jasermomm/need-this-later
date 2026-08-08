@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, readdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
@@ -14,12 +14,20 @@ async function listPrecacheFiles(directory: string, prefix = ""): Promise<string
   return files.flat();
 }
 
+const compatibilityAssets = {
+  "assets/app.js": "assets/index-BTsa1g8C.js",
+  "assets/app.css": "assets/index-CKFeCU7o.css",
+};
+
 function injectServiceWorkerPrecache(): Plugin {
   return {
     name: "inject-service-worker-precache",
     apply: "build",
     async closeBundle() {
       const outputDirectory = resolve(process.cwd(), "dist-pages");
+      for (const [source, alias] of Object.entries(compatibilityAssets)) {
+        await copyFile(resolve(outputDirectory, source), resolve(outputDirectory, alias));
+      }
       const serviceWorkerPath = resolve(outputDirectory, "sw.js");
       const files = await listPrecacheFiles(outputDirectory);
       const applicationShell = ["./", ...files.filter((file) => file !== "./index.html")].sort();
@@ -37,5 +45,16 @@ function injectServiceWorkerPrecache(): Plugin {
 export default defineConfig({
   base: process.env.BASE_PATH || "/need-this-later/",
   plugins: [react(), injectServiceWorkerPrecache()],
-  build: { outDir: "dist-pages", emptyOutDir: true, sourcemap: true },
+  build: {
+    outDir: "dist-pages",
+    emptyOutDir: true,
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/app.js",
+        chunkFileNames: "assets/[name].js",
+        assetFileNames: "assets/app[extname]",
+      },
+    },
+  },
 });

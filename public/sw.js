@@ -1,4 +1,4 @@
-const CACHE = "need-this-later-v5";
+const CACHE = "need-this-later-v6";
 const APP_SHELL = ["./", "./manifest.webmanifest", "./favicon.svg"];
 const DB_NAME = "need-this-later";
 const DB_VERSION = 3;

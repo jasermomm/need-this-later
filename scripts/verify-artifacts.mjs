@@ -67,6 +67,12 @@ const serviceWorker = await readFile(resolve(root, "dist-pages/sw.js"), "utf8");
 const globalStyles = await readFile(resolve(root, "app/globals.css"), "utf8");
 assert(globalStyles.includes('@import "tailwindcss" source(none);'), "Tailwind automatic source discovery must stay disabled for reproducible builds");
 assert(globalStyles.includes('@source "./";'), "Tailwind must scan the application source explicitly");
+const pagesHtml = await readFile(resolve(root, "dist-pages/index.html"), "utf8");
+assert(pagesHtml.includes('src="/need-this-later/assets/app.js"') || pagesHtml.includes('src="./assets/app.js"'), "PWA entry script must use a stable deployment URL");
+assert(pagesHtml.includes('href="/need-this-later/assets/app.css"') || pagesHtml.includes('href="./assets/app.css"'), "PWA stylesheet must use a stable deployment URL");
+for (const compatibilityAsset of ["assets/index-BTsa1g8C.js", "assets/index-CKFeCU7o.css"]) {
+  assert(await exists(`dist-pages/${compatibilityAsset}`), `Cached-page compatibility asset is missing: ${compatibilityAsset}`);
+}
 const shellMatch = serviceWorker.match(/const APP_SHELL = (\[[^;]+\]);/);
 assert(shellMatch, "Generated service-worker precache list is missing");
 const applicationShell = new Set(JSON.parse(shellMatch[1]));
