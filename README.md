@@ -60,7 +60,7 @@ npm run build:extension
 | Web / PWA | `app/`, `src/` | `npm run build:pages` |
 | Sites worker | `app/`, `worker/` | `npm run build` |
 | Browser extension | `apps/extension/` | `npm run build:extension` |
-| Desktop | `apps/desktop/src-tauri/` | `cargo tauri build` |
+| Desktop | `apps/desktop/src-tauri/` | `npm run tauri -- build` |
 | Mobile | `apps/mobile/` | Capacitor sync, then native platform build |
 | Sync backend | `supabase/` | Supabase CLI migrations |
 

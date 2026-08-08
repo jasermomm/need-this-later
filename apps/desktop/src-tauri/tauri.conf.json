@@ -34,6 +34,6 @@
     "shortDescription": "A private capture inbox",
     "longDescription": "Capture links, notes, images, and files immediately. Find them later without organizing first.",
     "copyright": "Copyright © 2026 I Need This Later contributors",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png"]
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.png", "icons/icon.icns", "icons/icon.ico"]
   }
 }

@@ -32,7 +32,7 @@ From the repository root:
 
 ```bash
 cargo install tauri-cli --version "^2" --locked
-cargo tauri build --manifest-path apps/desktop/src-tauri/Cargo.toml
+npm run tauri -- build
 ```
 
 Tauri’s `beforeBuildCommand` creates a relative static build. Windows builds require WebView2; Linux requires the distribution packages documented by Tauri; macOS signing/notarization requires Apple credentials. Unsigned CI artifacts should be labeled as such.
